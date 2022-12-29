@@ -16,16 +16,16 @@ public class Container
 
     public I RequestRequired<I>() where I : class => RequestRequired<I>(new(), new());
 
-    private I RequestRequired<I>(List<Type> types, Dictionary<Type, object> transients) where I : class
+    private I RequestRequired<I>(List<Type> types, Dictionary<Type, object> scoped) where I : class
     {
-        var instance = RequestRequired(typeof(I), types, transients) as I;
+        var instance = RequestRequired(typeof(I), types, scoped) as I;
         if (instance is null)
             throw new Exception($"Could not instantiate dependency {typeof(I).Name}.");
 
         return instance;
     }
 
-    private object RequestRequired(Type iType, IEnumerable<Type> types, Dictionary<Type, object> transients)
+    private object RequestRequired(Type iType, IEnumerable<Type> types, Dictionary<Type, object> scoped)
     {
         if (types.Contains(iType))
             throw new Exception($"Cannot resolve dependency {iType.Name}. Detected circular dependency.");
@@ -50,24 +50,24 @@ public class Container
                 case Life.Singleton:
                 {
                     if (!_singletons.ContainsKey(subdep.Interface))
-                        _singletons.Add(subdep.Interface, RequestRequired(subdep.Interface, types, transients));
+                        _singletons.Add(subdep.Interface, RequestRequired(subdep.Interface, types, scoped));
 
                     instances.Add(_singletons[subdep.Interface]);
                     break;
                 }
 
-                case Life.Transient:
+                case Life.Scoped:
                 {
-                    if (!transients.ContainsKey(subdep.Interface))
-                        transients.Add(subdep.Interface, RequestRequired(subdep.Interface, types, transients));
+                    if (!scoped.ContainsKey(subdep.Interface))
+                        scoped.Add(subdep.Interface, RequestRequired(subdep.Interface, types, scoped));
 
-                    instances.Add(transients[subdep.Interface]);
+                    instances.Add(scoped[subdep.Interface]);
                     break;
                 }
 
-                case Life.Scoped:
+                case Life.Transient:
                 {
-                    instances.Add(RequestRequired(subdep.Interface, types, transients));
+                    instances.Add(RequestRequired(subdep.Interface, types, scoped));
                     break;
                 }
             }

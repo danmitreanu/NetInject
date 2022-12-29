@@ -2,7 +2,7 @@ namespace NetInject;
 
 internal enum Life
 {
-    Scoped,
     Transient,
+    Scoped,
     Singleton
 }

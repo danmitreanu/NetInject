@@ -20,7 +20,7 @@ public class Container
     {
         var instance = RequestRequired(typeof(I), types, scoped) as I;
         if (instance is null)
-            throw new Exception($"Could not instantiate dependency {typeof(I).Name}.");
+            throw new NetInjectException($"Could not instantiate dependency {typeof(I).Name}.");
 
         return instance;
     }
@@ -28,13 +28,13 @@ public class Container
     private object RequestRequired(Type iType, IEnumerable<Type> types, Dictionary<Type, object> scoped)
     {
         if (types.Contains(iType))
-            throw new Exception($"Cannot resolve dependency {iType.Name}. Detected circular dependency.");
+            throw new NetInjectException($"Cannot resolve dependency {iType.Name}. Detected circular dependency.");
 
         types = types.Append(iType);
 
         Dependency dep;
         if (!_registered.ContainsKey(iType) || (dep = _registered[iType]).Class is null)
-           throw new Exception($"Cannot resolve dependency {iType.Name}. It is not registered.");
+           throw new NetInjectException($"Cannot resolve dependency {iType.Name}. It is not registered.");
 
         if (dep.InstantiationInfo is null)
             dep.InstantiationInfo = GetInstantiationInfo(dep.Class);
@@ -81,7 +81,7 @@ public class Container
         var i = typeof(I);
 
         if (_registered.Any(r => r.Key == i))
-            throw new Exception($"Cannot add dependency {i.Name} because it was already added.");
+            throw new NetInjectException($"Cannot add dependency {i.Name} because it was already added.");
 
         _registered.Add(i, new(i, typeof(T), lifetime));
         _registeredTypes.Add(i);
@@ -98,10 +98,10 @@ public class Container
         int validCtors = ctors.Count();
 
         if (validCtors == 0)
-            throw new Exception($"Cannot find any valid constructor for dependency {type.Name}.");
+            throw new NetInjectException($"Cannot find any valid constructor for dependency {type.Name}.");
 
         if (validCtors != 1)
-            throw new Exception($"Found too many valid constructors for dependency {type.Name}.");
+            throw new NetInjectException($"Found too many valid constructors for dependency {type.Name}.");
 
         var ctor = ctors.Single();
         return new(ctor, ctor.GetParameters().Select(p => p.ParameterType));

@@ -36,14 +36,20 @@ public class Container
         if (!_registered.ContainsKey(iType) || (dep = _registered[iType]).Class is null)
            throw new NetInjectException($"Cannot resolve dependency {iType.Name}. It is not registered.");
 
-        if (dep.InstantiationInfo is null)
-            dep.InstantiationInfo = GetInstantiationInfo(dep.Class);
+        dep.InstantiationInfo ??= GetInstantiationInfo(dep.Class);
 
         List<object> instances = new();
 
         foreach (var depType in dep.InstantiationInfo.Dependencies)
         {
             var subdep = _registered[depType];
+            if (dep.Lifetime > subdep.Lifetime)
+                throw new NetInjectException(
+                    string.Format(
+                        "Initializing {0} with dependency of shorter life {1} is not allowed.",
+                        dep.Interface.Name, subdep.Interface.Name
+                    )
+                );
 
             switch (subdep.Lifetime)
             {

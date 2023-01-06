@@ -37,6 +37,7 @@ public class Dep : IDep
         => Val = someOtherDep.Val;
 }
 
+container.AddSingleton<ISomeOtherDep, SomeOtherDep>();
 container.AddScoped<IDep, Dep>();
 var dep = container.RequestRequired<IDep>();
 Console.WriteLine(dep.Val);

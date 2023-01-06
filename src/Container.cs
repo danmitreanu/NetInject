@@ -32,10 +32,10 @@ public class Container
 
         types = types.Append(iType);
 
-        Dependency dep;
-        if (!_registered.ContainsKey(iType) || (dep = _registered[iType]).Class is null)
+        if (!_registered.ContainsKey(iType))
            throw new NetInjectException($"Cannot resolve dependency {iType.Name}. It is not registered.");
 
+        var dep = _registered[iType];
         dep.InstantiationInfo ??= GetInstantiationInfo(dep.Class);
 
         List<object> instances = new();

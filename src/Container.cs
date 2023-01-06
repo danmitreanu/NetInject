@@ -43,10 +43,10 @@ public class Container
         foreach (var depType in dep.InstantiationInfo.Dependencies)
         {
             var subdep = _registered[depType];
-            if (dep.Lifetime > subdep.Lifetime)
+            if (dep.Lifetime == Life.Singleton && subdep.Lifetime != Life.Singleton)
                 throw new NetInjectException(
                     string.Format(
-                        "Initializing {0} with dependency of shorter life {1} is not allowed.",
+                        "Initializing singleton {0} with dependency of shorter life {1} is not allowed.",
                         dep.Interface.Name, subdep.Interface.Name
                     )
                 );
